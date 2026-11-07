@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#191f2b">
+<meta name="robots" content="noindex,nofollow">
+<title>AIMWAREHOUSE · QR-сканер</title>
+<style>
+:root{--bg:#f5f6f8;--ink:#202735;--muted:#778294;--line:#e3e8ef;--lime:#c8f775;--nav:#191f2b;--green:#4d7741}
+*{box-sizing:border-box}html{min-height:100%}body{margin:0;background:var(--bg);color:var(--ink);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-text-size-adjust:100%}
+button,input,a{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}a{color:inherit}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #80aa56;outline-offset:3px}
+.shell{max-width:710px;margin:auto;padding:0 14px calc(28px + env(safe-area-inset-bottom))}
+.top{margin:0 -14px 18px;background:var(--nav);color:#fff;padding:calc(22px + env(safe-area-inset-top)) 21px 21px}
+.logo{font-weight:900;font-size:21px;letter-spacing:-.7px}.logo b{color:var(--lime)}.logo small{display:block;color:#8f9aab;font-size:9px;letter-spacing:2px;font-weight:500;margin-top:6px}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:12px}.top a{font-size:12px;color:#e1e6ee;text-decoration:none;border:1px solid #4c5666;border-radius:9px;padding:10px 12px}
+.h1{font-size:27px;margin:4px 0 6px;letter-spacing:-.6px}.hint{font-size:13px;color:var(--muted);line-height:1.55;margin:0 0 14px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:15px;overflow:hidden;margin:12px 0}
+.viewport{height:clamp(270px,65svh,460px);background:#111620;position:relative;overflow:hidden}
+#video{width:100%;height:100%;object-fit:cover;display:block;background:#111620}
+.camera-overlay{position:absolute;inset:0;pointer-events:none;display:grid;place-items:center}
+.target{width:min(64vw,255px);height:min(64vw,255px);border:2px solid #e7f2da99;border-radius:24px;box-shadow:0 0 0 120vw #07111b35;position:relative}
+.target:before,.target:after,.target i:before,.target i:after{content:"";position:absolute;width:34px;height:34px;border-color:var(--lime);border-style:solid}
+.target:before{top:-3px;left:-3px;border-width:4px 0 0 4px;border-top-left-radius:23px}.target:after{top:-3px;right:-3px;border-width:4px 4px 0 0;border-top-right-radius:23px}
+.target i:before{bottom:-3px;left:-3px;border-width:0 0 4px 4px;border-bottom-left-radius:23px}.target i:after{bottom:-3px;right:-3px;border-width:0 4px 4px 0;border-bottom-right-radius:23px}
+.target.success{border-color:#b2e577;box-shadow:0 0 0 120vw #07111b30,0 0 0 9px #b2e57744}
+.camera-placeholder{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:10px;color:#d3dbe7;background:#111620f5;padding:35px}
+.camera-placeholder .graphic{font-size:56px}.camera-placeholder strong{font-size:17px}.camera-placeholder span{font-size:13px;line-height:1.6;color:#a6b1c2;max-width:300px}
+.live-pill{position:absolute;top:14px;left:14px;font-size:10px;font-weight:700;letter-spacing:1.2px;background:#e5eaeeec;color:#374151;border-radius:30px;padding:7px 10px;z-index:1}
+.live-pill.running{color:#235227;background:#d5f8bd}
+.camera-controls{padding:15px;display:flex;gap:9px;flex-wrap:wrap}
+.btn{display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:46px;border-radius:10px;border:1px solid #d7dde5;background:#fff;color:#283548;padding:10px 16px;text-decoration:none;font-weight:650;font-size:13px;white-space:nowrap}
+.btn.dark{background:var(--nav);color:#fff;border-color:var(--nav)}.btn.lime{background:var(--lime);color:#27321f;border-color:var(--lime)}.btn.grow{flex:1}.btn[hidden]{display:none}
+#status{margin:0;padding:0 16px 16px;font-size:12px;color:#637085;line-height:1.5;min-height:30px;overflow-wrap:anywhere}#status.error{color:#b94e4e}
+.card-head{font-size:12px;letter-spacing:1px;font-weight:750;color:#8994a3;text-transform:uppercase;padding:17px 19px 0}
+.result{padding:13px 19px 20px}.sku{font:750 24px ui-monospace,Menlo,Consolas,monospace;overflow-wrap:anywhere;margin:5px 0 8px}.muted{color:#8592a2;font-size:12px}.last-actions{display:flex;gap:9px;margin-top:13px;flex-wrap:wrap}
+.list{padding:0 17px 6px}.entry{border-top:1px solid #edf0f3;padding:13px 2px;display:flex;align-items:center;justify-content:space-between;gap:12px}.entry .part{font:650 13px ui-monospace,monospace;overflow-wrap:anywhere}.entry .when{color:#93a0b0;font-size:11px;margin-top:4px}.entry a{color:#2e614b;font-size:12px;font-weight:700;white-space:nowrap}
+.footer{color:#8a96a5;font-size:11px;line-height:1.65;padding:8px 6px 25px}
+.hidden{display:none!important}
+@media(max-width:400px){.h1{font-size:23px}.top a{padding:9px}.viewport{height:340px}.camera-controls .btn{padding:10px 12px}.sku{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div class="topline">
+      <div class="logo"><b>AIM</b>WAREHOUSE<small>PRODUCTION INVENTORY</small></div>
+      <a id="back-app" href="#" target="_blank" rel="noopener noreferrer">Открыть склад ↗</a>
+    </div>
+  </header>
+  <main>
+    <h1 class="h1">Непрерывный QR-сканер</h1>
+    <p class="hint">Наведите камеру на наклейку. После считывания можно сканировать следующий товар — видеопоток останется активным. Карточка открывается отдельно.</p>
+    <section class="panel" aria-label="Камера и управление">
+      <div class="viewport">
+        <video id="video" autoplay muted playsinline webkit-playsinline></video>
+        <div class="camera-overlay"><div class="target" id="target"><i></i></div></div>
+        <div class="live-pill" id="live">ОСТАНОВЛЕН</div>
+        <div class="camera-placeholder" id="placeholder"><div class="graphic">⌗</div><strong>Камера выключена</strong><span>Нажмите «Запустить» и разрешите этому сайту использовать камеру iPhone.</span></div>
+      </div>
+      <div class="camera-controls">
+        <button class="btn dark grow" id="start" type="button">▶ Запустить</button>
+        <button class="btn grow" id="stop" type="button" disabled>■ Остановить</button>
+        <button class="btn" id="switch" type="button" disabled aria-label="Сменить камеру">↻ Камера</button>
+        <button class="btn" id="torch" type="button" hidden aria-label="Подсветка">☼ Свет</button>
+      </div>
+      <p id="status" aria-live="polite">Проверка подключения камеры начнётся после нажатия «Запустить».</p>
+    </section>
+    <section class="panel" aria-label="Последнее считывание">
+      <div class="card-head">Последний товар <span class="muted" id="count" style="float:right;text-transform:none;letter-spacing:0">0 сканирований</span></div>
+      <div class="result" id="result"><p class="muted">Наведите камеру на QR-код с наклейки AIMWAREHOUSE.</p></div>
+    </section>
+    <section class="panel" aria-label="История считываний">
+      <div class="card-head">История сканирований</div>
+      <div class="list" id="history"><p class="muted" style="padding:15px 2px">Здесь появятся последние считанные артикулы.</p></div>
+    </section>
+    <p class="footer">Сканер обрабатывает изображение непосредственно в браузере телефона, не отправляя видеопоток в Google Sheets. Для просмотра остатков и записи операций используется исходное приложение AIMWAREHOUSE с проверкой доступа Google. HTTPS и разрешение камеры обязательны.</p>
+  </main>
+</div>
+<canvas id="capture" class="hidden" aria-hidden="true"></canvas>
+<script>
+'use strict';
+// ОДИН АДРЕС: серверный склад с проверкой прав. QR с архивных развёртываний
+// тоже переводится на этот адрес, если в коде содержится корректный item.
+const AW_APP_URL='https://script.google.com/macros/s/AKfycbyL7IpX8GgJVo9O4b3sAvT7FPvZ0qlWUffbrZH63xJmfMbOEbY3j8Ug9-L2fy2uVY1sZw/exec';
+const $=id=>document.getElementById(id);
+const video=$('video'),capture=$('capture'),context=capture.getContext('2d',{willReadFrequently:true});
+const state={stream:null,scanning:false,frames:0,raf:0,lastFrame:0,decoding:false,camera:'environment',torch:false,detector:null,count:0,lastId:'',lastAt:0,lastSeenAt:0,repeatReady:true,history:[],successTimer:0};
+$('back-app').href=AW_APP_URL;
+function setStatus(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error)}
+function currentAppLink(id){return AW_APP_URL+'?item='+encodeURIComponent(id)}
+function extractSku(raw){
+  const text=String(raw??'').trim();if(!text||text.length>2048)return '';
+  let id=text;
+  if(text.startsWith('https://')||text.startsWith('http://')){
+    try{
+      const url=new URL(text);
+      if(url.protocol!=='https:'||url.hostname!=='script.google.com')return '';
+      if(!/^\/macros\/s\/[a-zA-Z0-9_-]+\/exec\/?$/.test(url.pathname))return '';
+      id=url.searchParams.get('item')||'';
+    }catch{return ''}
+  }
+  id=id.trim();return /^[a-zA-Z0-9._-]{1,100}$/.test(id)?id:'';
+}
+async function loadJsQR(){
+  if(typeof window.jsQR==='function')return;
+  const sources=['https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'];
+  for(const src of sources){
+    try{
+      await new Promise((ok,fail)=>{
+        const script=document.createElement('script');script.src=src;script.async=true;
+        script.onload=()=>typeof window.jsQR==='function'?ok():fail(new Error('Модуль не объявлен'));
+        script.onerror=()=>fail(new Error('Не загружен '+src));document.head.appendChild(script);
+      });
+      return;
+    }catch{}
+  }
+  throw Error('Библиотека QR не загрузилась. Проверьте интернет или блокировку CDN в Safari.');
+}
+async function prepareDecoder(){
+  if('BarcodeDetector' in window){
+    try{
+      const formats=await BarcodeDetector.getSupportedFormats();
+      if(formats.includes('qr_code')){state.detector=new BarcodeDetector({formats:['qr_code']});return}
+    }catch{}
+  }
+  state.detector=null;
+  await loadJsQR();
+}
+function describeError(e){
+  const n=e?.name||'';
+  if(n==='NotAllowedError'||n==='PermissionDeniedError')return 'Доступ к камере запрещён. Откройте настройки сайта в Safari и разрешите использование камеры.';
+  if(n==='NotFoundError'||n==='DevicesNotFoundError')return 'Камера не обнаружена на устройстве.';
+  if(n==='NotReadableError'||n==='TrackStartError')return 'Камера занята другим приложением. Закройте Камеру и повторите.';
+  if(n==='SecurityError')return 'Браузер запретил использование камеры. Откройте сканер отдельной страницей по HTTPS.';
+  return e?.message||String(e);
+}
+async function startCamera(){
+  if(state.scanning)return;
+  if(!window.isSecureContext||!navigator.mediaDevices?.getUserMedia){
+    setStatus('Нужна отдельная страница HTTPS в Safari. Встроенные окна Apps Script могут не давать доступ к камере.',true);return;
+  }
+  $('start').disabled=true;setStatus('Запрашиваем доступ к камере…');
+  try{
+    const media=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:state.camera},width:{ideal:1280},height:{ideal:720}}});
+    state.stream=media;video.srcObject=media;
+    video.muted=true;video.playsInline=true;
+    await video.play();
+    state.repeatReady=true;state.lastSeenAt=0;
+    state.scanning=true;
+    $('placeholder').classList.add('hidden');
+    $('start').disabled=true;$('stop').disabled=false;$('switch').disabled=false;
+    $('live').textContent='СКАНИРУЕТ';$('live').classList.add('running');
+    enableTorchIfAvailable();
+    setStatus('Камера работает. Наведите QR-код в центральную рамку.');
+    await prepareDecoder();
+    state.lastFrame=0;state.raf=requestAnimationFrame(decodeFrame);
+  }catch(e){stopCamera();setStatus(describeError(e),true)}
+}
+function stopCamera(){
+  state.scanning=false;cancelAnimationFrame(state.raf);state.raf=0;
+  if(state.stream)for(const track of state.stream.getTracks())track.stop();
+  state.stream=null;state.detector=null;state.decoding=false;state.torch=false;
+  video.srcObject=null;
+  $('placeholder').classList.remove('hidden');
+  $('start').disabled=false;$('stop').disabled=true;$('switch').disabled=true;$('torch').hidden=true;
+  $('live').textContent='ОСТАНОВЛЕН';$('live').classList.remove('running');
+}
+function enableTorchIfAvailable(){
+  const track=state.stream?.getVideoTracks()[0];
+  const capable=track?.getCapabilities?.()||{};
+  $('torch').hidden=!capable.torch;$('torch').textContent='☼ Свет';
+}
+async function toggleTorch(){
+  const track=state.stream?.getVideoTracks()[0];if(!track)return;
+  const next=!state.torch;
+  try{await track.applyConstraints({advanced:[{torch:next}]});state.torch=next;$('torch').textContent=next?'☼ Выкл. свет':'☼ Свет'}
+  catch(e){setStatus('Фонарик недоступен в этом браузере. Сканирование продолжает работать.')}
+}
+function updateResult(id,now){
+  if(id===state.lastId&&!state.repeatReady)return;
+  state.lastId=id;state.lastAt=now;state.repeatReady=false;state.count++;
+  $('count').textContent=state.count+' сканирований';
+  $('result').replaceChildren();
+  const sku=document.createElement('div');sku.className='sku';sku.textContent=id;
+  const note=document.createElement('div');note.className='muted';note.textContent='QR считан. Можете сразу сканировать следующую наклейку.';
+  const actions=document.createElement('div');actions.className='last-actions';
+  const open=document.createElement('a');open.className='btn lime grow';open.href=currentAppLink(id);open.target='_blank';open.rel='noopener noreferrer';open.textContent='Открыть карточку ↗';
+  const copy=document.createElement('button');copy.className='btn';copy.type='button';copy.textContent='Копировать артикул';
+  copy.onclick=async()=>{try{await navigator.clipboard.writeText(id);setStatus('Артикул '+id+' скопирован.')}catch{setStatus('Не удалось скопировать артикул.',true)}};
+  actions.append(open,copy);$('result').append(sku,note,actions);
+  state.history.unshift({id,time:new Date()});state.history.length=Math.min(state.history.length,20);renderHistory();
+  const target=$('target');target.classList.add('success');clearTimeout(state.successTimer);
+  state.successTimer=setTimeout(()=>target.classList.remove('success'),550);
+  if(navigator.vibrate)try{navigator.vibrate(30)}catch{}
+  setStatus('Распознано: '+id+' · сканирование продолжается');
+}
+function renderHistory(){
+  const list=$('history');list.replaceChildren();
+  for(const entry of state.history){
+    const row=document.createElement('div');row.className='entry';
+    const wrapper=document.createElement('div');
+    const part=document.createElement('div');part.className='part';part.textContent=entry.id;
+    const time=document.createElement('div');time.className='when';time.textContent=entry.time.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    wrapper.append(part,time);
+    const link=document.createElement('a');link.href=currentAppLink(entry.id);link.target='_blank';link.rel='noopener noreferrer';link.textContent='Карточка ↗';
+    row.append(wrapper,link);list.append(row);
+  }
+}
+async function decodeFrame(t){
+  if(!state.scanning)return;
+  state.raf=requestAnimationFrame(decodeFrame);
+  if(state.decoding||t-state.lastFrame<190||video.readyState<2)return;
+  state.lastFrame=t;state.decoding=true;
+  try{
+    let decoded='';
+    if(state.detector){
+      const found=await state.detector.detect(video);
+      decoded=found?.[0]?.rawValue||'';
+    }else if(typeof window.jsQR==='function'){
+      const width=video.videoWidth,height=video.videoHeight;
+      if(!width||!height)return;
+      const factor=Math.min(1,800/Math.max(width,height));
+      capture.width=Math.max(1,Math.floor(width*factor));capture.height=Math.max(1,Math.floor(height*factor));
+      context.drawImage(video,0,0,capture.width,capture.height);
+      const img=context.getImageData(0,0,capture.width,capture.height);
+      decoded=window.jsQR(img.data,img.width,img.height,{inversionAttempts:'attemptBoth'})?.data||'';
+    }
+    if(decoded){
+      const id=extractSku(decoded);
+      if(id){state.lastSeenAt=Date.now();updateResult(id,state.lastSeenAt)}
+      else if(state.lastAt===0||Date.now()-state.lastAt>4000)setStatus('QR обнаружен, но в нём нет допустимого артикула AIMWAREHOUSE.');
+    }else if(state.lastId&&Date.now()-state.lastSeenAt>1400){state.repeatReady=true;}
+  }catch(e){
+    if(state.scanning){setStatus('Ошибка декодирования: '+describeError(e),true)}
+  }finally{state.decoding=false}
+}
+$('start').addEventListener('click',startCamera);
+$('stop').addEventListener('click',()=>{stopCamera();setStatus('Камера остановлена. Нажмите «Запустить», чтобы продолжить.');});
+$('switch').addEventListener('click',async()=>{state.camera=state.camera==='environment'?'user':'environment';stopCamera();await startCamera()});
+$('torch').addEventListener('click',toggleTorch);
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&state.scanning){stopCamera();setStatus('Сканер остановлен при переключении вкладки. Вернитесь и нажмите «Запустить».')}
+});
+window.addEventListener('pagehide',stopCamera);
+</script>
+</body>
+</html>
